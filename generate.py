@@ -128,21 +128,38 @@ class CrosswordCreator():
                 if word_x[overlap[0]] in letters_y:
                     continue
                 else:
-                    self.domains[x].remove(word)
+                    self.domains[x].remove(word_x)
                     revised = True
 
         return revised
 
-    # def ac3(self, arcs=None):
-    #     """
-    #     Update `self.domains` such that each variable is arc consistent.
-    #     If `arcs` is None, begin with initial list of all arcs in the problem.
-    #     Otherwise, use `arcs` as the initial list of arcs to make consistent.
+    def ac3(self, arcs=None):
+        """
+        Update `self.domains` such that each variable is arc consistent.
+        If `arcs` is None, begin with initial list of all arcs in the problem.
+        Otherwise, use `arcs` as the initial list of arcs to make consistent.
 
-    #     Return True if arc consistency is enforced and no domains are empty;
-    #     return False if one or more domains end up empty.
-    #     """
-    #     raise NotImplementedError
+        Return True if arc consistency is enforced and no domains are empty;
+        return False if one or more domains end up empty.
+        """
+        if arcs == None:
+            queue = []
+            for arc in self.crossword.overlaps.keys():
+                if self.crossword.overlaps[arc] != None:
+                    queue.append(arc) 
+        else:
+            queue = arcs.copy()
+
+        while len(queue) != 0:
+            x, y = queue.pop()
+            if self.revise(x, y):
+                if len(self.domains[x]) == 0:
+                    return False
+                for z in (self.crossword.neighbors(x) - {y}):
+                    queue.append((z,x))
+
+        return True
+
 
     # def assignment_complete(self, assignment):
     #     """
