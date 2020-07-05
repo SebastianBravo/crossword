@@ -105,16 +105,33 @@ class CrosswordCreator():
                 if len(word) != var.length:
                     self.domains[var].remove(word)
 
-    # def revise(self, x, y):
-    #     """
-    #     Make variable `x` arc consistent with variable `y`.
-    #     To do so, remove values from `self.domains[x]` for which there is no
-    #     possible corresponding value for `y` in `self.domains[y]`.
+    def revise(self, x, y):
+        """
+        Make variable `x` arc consistent with variable `y`.
+        To do so, remove values from `self.domains[x]` for which there is no
+        possible corresponding value for `y` in `self.domains[y]`.
 
-    #     Return True if a revision was made to the domain of `x`; return
-    #     False if no revision was made.
-    #     """
-    #     raise NotImplementedError
+        Return True if a revision was made to the domain of `x`; return
+        False if no revision was made.
+        """
+        revised = False
+        overlap = self.crossword.overlaps[(x,y)]
+        words_x = self.domains[x].copy()
+        words_y = self.domains[y].copy()
+
+        if overlap == None:
+            return revised
+        else:
+            letters_y = [word[overlap[1]] for word in words_y]
+
+            for word_x in words_x:
+                if word_x[overlap[0]] in letters_y:
+                    continue
+                else:
+                    self.domains[x].remove(word)
+                    revised = True
+
+        return revised
 
     # def ac3(self, arcs=None):
     #     """
