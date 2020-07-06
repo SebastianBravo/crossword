@@ -246,6 +246,7 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
+
         if self.assignment_complete(assignment):
             return assignment
 
@@ -257,6 +258,10 @@ class CrosswordCreator():
 
             if self.consistent(new_assignment):
                 assignment[var] = word
+
+                arcs = [(x, var) for x in self.crossword.neighbors(var)]
+                self.ac3(arcs)
+
                 result = self.backtrack(assignment)
 
                 if result != None:
