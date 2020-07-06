@@ -191,14 +191,29 @@ class CrosswordCreator():
 
         return True
 
-    # def order_domain_values(self, var, assignment):
-    #     """
-    #     Return a list of values in the domain of `var`, in order by
-    #     the number of values they rule out for neighboring variables.
-    #     The first value in the list, for example, should be the one
-    #     that rules out the fewest values among the neighbors of `var`.
-    #     """
-    #     raise NotImplementedError
+    def order_domain_values(self, var, assignment):
+        """
+        Return a list of values in the domain of `var`, in order by
+        the number of values they rule out for neighboring variables.
+        The first value in the list, for example, should be the one
+        that rules out the fewest values among the neighbors of `var`.
+        """
+        ruled = dict()
+
+        for word_var in self.domains[var]:
+            n = 0
+            for var2 in self.crossword.neighbors(var):
+                if var2 not in assignment:
+                    i, j = self.crossword.overlaps[(var, var2)]
+                    for word_var2 in self.domains[var2]:
+                        if word_var[i] != word_var2[j]:
+                            n += 1
+
+            ruled[word_var] = n
+
+        words = sorted(ruled.items(), key=lambda x: x[1])
+
+        return [x[0] for x in words]
 
     # def select_unassigned_variable(self, assignment):
     #     """
