@@ -212,9 +212,10 @@ class CrosswordCreator():
 
             ruled[word_var] = n
 
-        words = sorted(ruled.items(), key=lambda x: x[1])
+        ordered = sorted(ruled.items(), key=lambda x: x[1])
+        domain = [x[0] for x in ordered]
 
-        return [x[0] for x in words]
+        return domain
 
     def select_unassigned_variable(self, assignment):
         """
@@ -224,9 +225,17 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
-        for var in self.domains:
+        var_properties_list =[]
+
+        for var in self.domains.keys():
             if var not in assignment:
-                return var
+                domain_len = len(self.domains[var])
+                neig_len = len(self.crossword.neighbors(var))
+                var_properties_list.append((var, domain_len, neig_len))
+
+        sorted_list = sorted(var_properties_list, key=lambda x: (x[1], x[2]))
+
+        return sorted_list[0][0]
 
     def backtrack(self, assignment):
         """
