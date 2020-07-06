@@ -85,13 +85,13 @@ class CrosswordCreator():
 
         img.save(filename)
 
-    # def solve(self):
-    #     """
-    #     Enforce node and arc consistency, and then solve the CSP.
-    #     """
-    #     self.enforce_node_consistency()
-    #     self.ac3()
-    #     return self.backtrack(dict())
+    def solve(self):
+        """
+        Enforce node and arc consistency, and then solve the CSP.
+        """
+        self.enforce_node_consistency()
+        self.ac3()
+        return self.backtrack(dict())
 
     def enforce_node_consistency(self):
         """
@@ -186,8 +186,9 @@ class CrosswordCreator():
                 return False
             for var2 in self.crossword.neighbors(var):
                 i, j = self.crossword.overlaps[(var,var2)]
-                if assignment[var][i] != assignment[var2][j]:
-                    return False
+                if var2 in assignment:
+                    if assignment[var][i] != assignment[var2][j]:
+                        return False
 
         return True
 
@@ -215,26 +216,46 @@ class CrosswordCreator():
 
         return [x[0] for x in words]
 
-    # def select_unassigned_variable(self, assignment):
-    #     """
-    #     Return an unassigned variable not already part of `assignment`.
-    #     Choose the variable with the minimum number of remaining values
-    #     in its domain. If there is a tie, choose the variable with the highest
-    #     degree. If there is a tie, any of the tied variables are acceptable
-    #     return values.
-    #     """
-    #     raise NotImplementedError
+    def select_unassigned_variable(self, assignment):
+        """
+        Return an unassigned variable not already part of `assignment`.
+        Choose the variable with the minimum number of remaining values
+        in its domain. If there is a tie, choose the variable with the highest
+        degree. If there is a tie, any of the tied variables are acceptable
+        return values.
+        """
+        for var in self.domains:
+            if var not in assignment:
+                return var
 
-    # def backtrack(self, assignment):
-    #     """
-    #     Using Backtracking Search, take as input a partial assignment for the
-    #     crossword and return a complete assignment if possible to do so.
+    def backtrack(self, assignment):
+        """
+        Using Backtracking Search, take as input a partial assignment for the
+        crossword and return a complete assignment if possible to do so.
 
-    #     `assignment` is a mapping from variables (keys) to words (values).
+        `assignment` is a mapping from variables (keys) to words (values).
 
-    #     If no assignment is possible, return None.
-    #     """
-    #     raise NotImplementedError
+        If no assignment is possible, return None.
+        """
+        if self.assignment_complete(assignment):
+            return assignment
+
+        var = self.select_unassigned_variable(assignment)
+
+        for word in self.order_domain_values(var, assignment):
+            new_assignment = assignment.copy()
+            new_assignment[var] = word
+
+            if self.consistent(new_assignment):
+                assignment[var] = word
+                result = self.backtrack(assignment)
+
+                if result != None:
+                    return result
+
+            delete = assignment.pop(var, None)
+
+        return None
 
 
 def main():
