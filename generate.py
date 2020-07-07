@@ -114,16 +114,24 @@ class CrosswordCreator():
         Return True if a revision was made to the domain of `x`; return
         False if no revision was made.
         """
+        # Variable to track whether any change was made
         revised = False
+
+        # Variable to track the overlap indices 
         overlap = self.crossword.overlaps[(x,y)]
+
+        # Lists of words in the domain of variable x and variable y
         words_x = self.domains[x].copy()
         words_y = self.domains[y].copy()
 
         if overlap == None:
             return revised
         else:
+            # List of letters at the overlap position for words_y
             letters_y = [word[overlap[1]] for word in words_y]
 
+            # Check if each word in the domain of variable x has a posible
+            # value in the domain of y
             for word_x in words_x:
                 if word_x[overlap[0]] in letters_y:
                     continue
@@ -199,8 +207,12 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
+        # Iniatilize an empty dictionary to keep track of the number of
+        # words ruled up for each word in the domain of var
         ruled = dict()
 
+        # Add the word and the corrisponding number of ruled words to
+        # the ruled dictionary
         for word_var in self.domains[var]:
             n = 0
             for var2 in self.crossword.neighbors(var):
@@ -209,9 +221,9 @@ class CrosswordCreator():
                     for word_var2 in self.domains[var2]:
                         if word_var[i] != word_var2[j]:
                             n += 1
-
             ruled[word_var] = n
 
+        # Sort words in the domain of var
         ordered = sorted(ruled.items(), key=lambda x: x[1])
         domain = [x[0] for x in ordered]
 
@@ -225,14 +237,18 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
+        # Iniatilize an empty list to keep track of var properties as tuples
+        # Each tuple represent: (Variablem, number of words, number of neigbors)
         var_properties_list =[]
 
+        # Add tuples for each not assigned variable
         for var in self.domains.keys():
             if var not in assignment:
                 domain_len = len(self.domains[var])
                 neig_len = len(self.crossword.neighbors(var))
                 var_properties_list.append((var, domain_len, neig_len))
 
+        # Sort propeties list considering the number of neighbors and words
         sorted_list = sorted(var_properties_list, key=lambda x: (x[1], x[2]))
 
         return sorted_list[0][0]
@@ -246,27 +262,33 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
-
+        # Checks if the assignment is complete
         if self.assignment_complete(assignment):
             return assignment
 
+        # Select an unassigned variable
         var = self.select_unassigned_variable(assignment)
 
+        # Loop through all the words in the domain of the variable selected
         for word in self.order_domain_values(var, assignment):
+
+            # Create a copy of the assignment dictionary to avoid alterations
             new_assignment = assignment.copy()
+
+            # Add the new assigment to the dictionary copied
             new_assignment[var] = word
 
+            # If the assignment is consistent add the assignment to the,
+            # original dictionary, inforce arcconsistency and calls backtrack
             if self.consistent(new_assignment):
                 assignment[var] = word
-
                 arcs = [(x, var) for x in self.crossword.neighbors(var)]
                 self.ac3(arcs)
-
                 result = self.backtrack(assignment)
-
                 if result != None:
                     return result
 
+            # Delete the assignment if not consistent assignment
             delete = assignment.pop(var, None)
 
         return None
